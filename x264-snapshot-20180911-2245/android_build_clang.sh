@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 X264_VERSION=""
 SHELL_PATH=`pwd`
 X264_PATH=$SHELL_PATH/
@@ -9,12 +9,12 @@ LAST_VERSION=$1
 ANDROID_API=$2
 NDK=$3
  
-#需要编译的Android API版本，21以及以上才有arm64 和 x86_64版本
+#需要编译的Android API版本
 if [ ! "$ANDROID_API" ]
 then
 ANDROID_API=21
 fi
-#需要编译的NDK路径，NDK版本需大等于r15
+#需要编译的NDK路径，NDK版本需大等于r15c
 if [ ! "$NDK" ]
 then
 NDK=/home/cq/Android/Sdk/ndk-bundle
@@ -27,8 +27,6 @@ ARCHS=(arm arm64 x86 x86_64)
 TRIPLES=(arm-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android)
 TRIPLES_PATH=(arm-linux-androideabi-4.9 aarch64-linux-android-4.9 x86-4.9 x86_64-4.9)
  
-FF_CONFIGURE_FLAGS="--enable-static --enable-pic --disable-cli --disable-asm"
- 
 
 
 for i in "${!ARCHS[@]}";
@@ -40,8 +38,24 @@ do
     ASM=$ISYSROOT/usr/include/${TRIPLES[$i]}
     CROSS_PREFIX=$TOOLCHAIN/bin/${TRIPLES[$i]}-
     PREFIX_ARCH=$PREFIX/$ARCH
- 
-    FF_CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -DANDROID"
+
+	#different cpu
+	if [ "$ARCH" = "arm" ];then
+	    FF_CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -DANDROID"
+	    FF_CONFIGURE_FLAGS="--enable-static --enable-pic"
+
+	elif [ "$ARCH" = "arm64" ];then
+	    FF_CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -DANDROID"
+	    FF_CONFIGURE_FLAGS="--enable-static --enable-pic"
+
+	elif [ "$ARCH" = "x86" ];then
+	    FF_CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -DANDROID"
+	    FF_CONFIGURE_FLAGS="--enable-static --enable-pic"
+
+	else
+	    FF_CFLAGS="-I$ASM -isysroot $ISYSROOT -D__ANDROID_API__=$ANDROID_API -U_FILE_OFFSET_BITS -DANDROID"
+	    FF_CONFIGURE_FLAGS="--enable-static --enable-pic"
+	fi
  
     ./configure \
     --prefix=$PREFIX_ARCH \
